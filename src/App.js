@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import ExpenseFilter from './components/ExpenseFilter';
+import ExpenseList from './components/ExpenseList';
+import ExpensesChart from './components/ExpensesChart';
+import NewExpense from './components/NewExpense';
+import { DEFAULT_FILTER, EXPENSE, FILTERS } from './mock/data';
+import Expense from './page/Expense';
+import { getYear } from './tools/dateConverter';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+const App = () => {
+  const [expenses, setExpenses] = useState(EXPENSE);
+  const [filterExpenses, setFilterExpenses] = useState(expenses);
+
+  const [selectedYear, setSelectedYear] = useState(DEFAULT_FILTER);
+
+  const addExpenseHandle = (newExpense) => {
+    setExpenses((prevState) => [newExpense, ...prevState]);
+  };
+
+  const filterExpenseHandle = (selectedYear) => {
+    setSelectedYear(selectedYear);
+  };
+
+  useEffect(() => {
+    setFilterExpenses(
+      expenses.filter(({ date }) => getYear({ date }) === selectedYear)
+    );
+  }, [expenses, selectedYear]);
+
+  const expenseFilterComponent = (
+    <ExpenseFilter
+      onFilterExpenseHandle={filterExpenseHandle}
+      option={selectedYear}
+      filters={FILTERS}
+    />
   );
-}
+
+  const expenseCharComponent = <ExpensesChart expenses={filterExpenses} />;
+
+  const expenseListComponent = <ExpenseList expenses={filterExpenses} />;
+
+  return (
+    <>
+      <NewExpense onAddExpenseHandle={addExpenseHandle} />
+
+      <Expense
+        expenses={filterExpenses}
+        filterComponent={expenseFilterComponent}
+        expenseCharComponent={expenseCharComponent}
+        expenseListComponent={expenseListComponent}
+      />
+    </>
+  );
+};
 
 export default App;
